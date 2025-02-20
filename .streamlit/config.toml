@@ -1,5 +1,10 @@
-[owner]
-name = "Lakshit Jain"
-
 [server]
 maxUploadSize = 10
+
+[theme]
+
+primaryColor="#FF6B81"
+backgroundColor="#FFFFFF"
+secondaryBackgroundColor="#FFE6EA"
+textColor="#333333"
+font="sans serif"

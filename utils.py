@@ -1,5 +1,7 @@
 import os
 import re
+import urllib.parse
+import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 from langchain.text_splitter import CharacterTextSplitter
@@ -97,76 +99,6 @@ def ats_score(ats_resume):
         f"✅ Good to Go | 🟡 Needs Minor Fixes | 🔴 Requires Major Improvement\n\n"
         
         f"Resume:\n{ats_resume}\n\n"
-
-    #     f"""
-    # Analyze the uploaded resume with an in-depth **Applicant Tracking System (ATS) evaluation**. 
-    # Provide a **detailed ATS compatibility score** based on **keyword optimization, formatting, readability, structuring, and job relevance**. 
-    # Identify strengths, weaknesses, and actionable improvements for better ATS performance.
-
-    # ---
-    # ## 📌 **ATS Resume Analysis Report**
-
-    # ### 🟢 **Final ATS Resume Score: _X/100_**  
-    # (A detailed evaluation of ATS compatibility, keyword optimization, formatting, and relevance.)
-
-    # ---
-    # ### 📊 **Section-Wise Breakdown**  
-
-    # | **Criteria**                           | **Score** | **Remarks** |  
-    # |-----------------------------------------|----------|-------------|  
-    # | ✅ **Keyword Optimization** (30%)       | _X/30_   | [Brief remark] |  
-    # | ✅ **Formatting & ATS Readability** (20%) | _X/20_   | [Brief remark] |  
-    # | ✅ **Section Structuring & Completeness** (15%) | _X/15_   | [Brief remark] |  
-    # | ✅ **Work Experience & Achievements** (15%) | _X/15_   | [Brief remark] |  
-    # | ✅ **Job Match Score** (10%) | _X/10_   | [Brief remark] |  
-    # | ✅ **Grammar & Readability** (10%) | _X/10_   | [Brief remark] |  
-    # | **🟠 Total Score** | **_X/100_** | **Overall ATS Compatibility** |  
-
-    # ---
-    # ### 🟢 **Key Strengths**  
-    # ✔️ **[Point 1]**  
-    # ✔️ **[Point 2]**  
-    # ✔️ **[Point 3]**  
-
-    # ---
-    # ### 🔴 **Critical Issues & Recommended Fixes**  
-
-    # #### 1️⃣ **Formatting & ATS Readability Issues:**  
-    # 🚫 **[Issue 1]** → ✅ **[Suggested Fix]**  
-    # 🚫 **[Issue 2]** → ✅ **[Suggested Fix]**  
-
-    # #### 2️⃣ **Missing Keywords & Job Relevance:**  
-    # 🔎 **Missing Keywords:** [List missing job-specific terms]  
-    # 📌 **Suggested Additions:** [Recommended keyword insertions]  
-
-    # #### 3️⃣ **Work Experience & Achievements:**  
-    # ❌ **[Weak bullet point]** → ✅ **[Rewritten strong bullet point]**  
-
-    # #### 4️⃣ **Grammar & Readability Issues:**  
-    # 📝 **[Grammar mistake]** → ✅ **[Suggested correction]**  
-
-    # ---
-    # ### 📌 **Job Match Score (if JD is provided)**  
-    # 📊 **_X% match_** with job description  
-    # 🔎 **Missing Required Skills/Experience:**  
-    # - [Skill 1]  
-    # - [Skill 2]  
-    # - [Skill 3]  
-
-    # ---
-    # ### 🚀 **Final Recommendation:**  
-    # 🟢 **Good to Go** (90-100)  
-    # 🟡 **Needs Minor Fixes** (70-89)  
-    # 🔴 **Requires Major Improvement** (Below 70)  
-
-    # ---
-    # Ensure the feedback is **clear, actionable, and structured** for better ATS performance. 
-    # Return the final result in the given structured format.
-
-    # Resume:
-    # {ats_resume}
-
-    # """
     )
 
     response = model.generate_content(prompt)
@@ -264,4 +196,73 @@ text_splitter = CharacterTextSplitter(
     chunk_size=800,
     chunk_overlap=200,
     length_function=len,
-) 
+)
+
+def generate_linkedin_search_url(resume_summary):
+    # Define the prompt to extract keywords and generate a LinkedIn job search query
+    prompt = (
+        f"**Step 1: Extract Keywords from the Resume**\n"
+        f"Please scan the uploaded resume summary and return a JSON decodable string, (properties and values should be in double quotes) with the following structure:\n"
+        f"{{\n"
+        f"  'roles': ['Role 1', 'Role 2'],\n"  
+        f"  'skills': ['Skill 1', 'Skill 2'],\n"
+        f"  'technologies': ['Tech 1', 'Tech 2'],\n"
+        f"  'locations': ['Location 1', 'Location 2']\n"
+        f"}}\n\n"
+        f"Extract from this resume summary:\n{resume_summary}\n"
+    )
+
+    # Generate content using the model
+    response = model.generate_content(prompt)
+    response_text = response.text
+
+    # Create a new prompt to process the response
+    processing_prompt = (
+        f"Given this JSON response from a resume analysis:\n{response_text}\n\n"
+        f"Please create a LinkedIn job search URL with the following steps:\n"
+        f"1. Parse the JSON and extract the roles, skills, technologies and locations\n"
+        f"2. For locations, combine any found locations with: Mumbai, Delhi, Bangalore, Hyderabad, Chennai, Kolkata, Pune, Ahmedabad, Surat, Noida\n"
+        f"3. Build search query by combining:\n"
+        f"   - Roles with OR between them in quotes\n"
+        f"   - Skills with OR between them in quotes\n"
+        f"   - Technologies with OR between them in quotes\n"
+        f"   - Locations with OR between them in quotes\n"
+        f"4. Combine all parts with AND between them\n"
+        f"5. Add (\"fulltime\" OR \"internship\") to the query\n"
+        f"6. URL encode the query\n"
+        f"7. Return the full LinkedIn jobs search URL in this format:\n"
+        f"https://www.linkedin.com/jobs/search/?keywords=<encoded_query>\n"
+        f"8. Return the URL only, no other text or comments.\n"
+    )
+
+    # Let the model generate the URL
+    url_response = model.generate_content(processing_prompt)
+    linkedin_url = url_response.text.strip()
+
+    return linkedin_url
+
+def generate_cover_letter(resume_summary, job_description, additional_instructions):
+    prompt = (
+        f"**Objective:** Generate a professional and tailored cover letter for a job application based on the candidate's resume and the job description.\n\n"
+        f"**Instructions:**\n"
+        f"1. **Cover Letter Structure:**\n"
+        f"   - Start with a strong introduction that grabs the attention of the hiring manager.\n"
+        f"   - Tailor the letter to the specific job and company.\n"
+        f"   - Include relevant skills and experiences that match the job description.\n"
+        f"   - Keep the letter concise and to the point.\n"
+        f"2. **Resume Summary:**\n"
+        f"   - Use the candidate's resume summary to tailor the cover letter.\n"
+        f"3. **Job Description:**\n"
+        f"   - Use the job description to tailor the cover letter.\n"
+        f"4. **Output Format:**\n"
+        f"   - Use a professional and formal tone.\n"
+        f"   - Keep the letter concise and to the point.\n"
+        f"**Data Blocks:**\n"
+        f"**Candidate Resume Summary:**\n{resume_summary}\n\n"
+        f"**Job Description:**\n{job_description}\n\n"
+        f"**Additional Instructions:**\n{additional_instructions}\n\n"
+    )
+
+    response = model.generate_content(prompt)
+    return response.text
+
