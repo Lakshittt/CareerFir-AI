@@ -6,16 +6,6 @@ import re
 import google.generativeai as genai
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
-from utils import (
-    summarize_resume,
-    summarize_requirements,
-    analyze_alignment,
-    extract_percentage,
-    load_pdf_text,
-    ats_score,
-    generate_linkedin_search_url,
-    generate_cover_letter
-)
 import os
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")
