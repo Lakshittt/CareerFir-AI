@@ -4,6 +4,17 @@
 
 This AI-Powered Job Fit Assessment tool helps streamline the job application process by analyzing the alignment between resumes and job requirements. The system provides comprehensive evaluations of candidates' fit for positions, making it easier for both recruiters and job seekers to assess compatibility.
 
+## Features
+
+- 🔍 ATS Resume Checker
+- 📈 Job Alignment Analysis
+- 📝 Cover Letter Generator
+- 💼 Job Search
+- Resume compatibility analysis
+- ATS score evaluation
+- Detailed alignment analysis
+- Percentage-based fit scoring
+
 The tool uses advanced natural language processing to:
 
 - Analyze resumes against job requirements
@@ -96,9 +107,17 @@ streamlit run app.py
 
 ## Usage
 
-1. Upload your resume (PDF format)
-2. Upload job requirements (PDF or TXT format)
-3. (Optional) Add any specific instructions or context
-4. Click "Analyze" to get a detailed assessment
-5. Review the fit percentage and detailed analysis
-6. Use the suggestions to improve your application
+1. Upload your resume (PDF format) to the Career Fit AI platform.
+2. Upload job requirements (PDF or TXT format) for the desired position.
+3. (Optional) Provide any additional context or specific instructions to tailor the analysis.
+4. Click "Analyze" to receive a comprehensive career fit assessment.
+5. Review the fit percentage and detailed alignment analysis to understand your compatibility with the job.
+6. Utilize the actionable suggestions to enhance your application and improve your career fit.
+
+## Contribution
+
+Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
