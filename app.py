@@ -5,11 +5,11 @@ import re
 import google.generativeai as genai
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
-import os
 
-gemini_api_key = os.getenv("GEMINI_API_KEY")
+# Error Handling for API Key
+gemini_api_key = st.secrets["GEMINI_API_KEY"]
 if not gemini_api_key:
-    raise ValueError(f"Unable to retrieve GEMINI_API_KEY.")
+    raise ValueError("GEMINI_API_KEY is not set in the secrets.")
 
 genai.configure(api_key=gemini_api_key)
 model = genai.GenerativeModel('gemini-pro')
@@ -241,7 +241,6 @@ def generate_cover_letter(resume_summary, job_description, additional_instructio
 
 
 # UI Code
-os.getenv("GEMINI_API_KEY")
 
 # Load configuration
 config = toml.load(".streamlit/config.toml")
@@ -311,8 +310,10 @@ with tab2:
                         # Load requirements text
                         if requirements_file.type == "application/pdf":
                             requirements_text = load_pdf_text(requirements_file)
-                        else:
+                        elif requirements_file.type == "text/plain":
                             requirements_text = requirements_file.getvalue().decode("utf-8")
+                        else:
+                            st.warning("Unsupported file type. Please upload a PDF or TXT file.")                           
 
                         # Summarize requirements
                         requirements_summary = summarize_requirements(requirements_text)
