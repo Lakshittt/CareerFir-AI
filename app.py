@@ -1,6 +1,5 @@
 import streamlit as st
 import toml
-import os
 import tempfile
 import re
 import google.generativeai as genai
