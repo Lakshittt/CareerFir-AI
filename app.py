@@ -10,10 +10,9 @@ from utils import (
     generate_linkedin_search_url,
     generate_cover_letter
 )
-import json
-import tempfile
 import os
-import subprocess
+
+os.getenv("GEMINI_API_KEY")
 
 # Load configuration
 config = toml.load(".streamlit/config.toml")
@@ -112,7 +111,7 @@ with tab3:
     if 'resume_summary' in st.session_state:
         resume_summary = st.session_state['resume_summary']
         job_description = st.text_area("Enter the job description", height=100)
-        additional_instructions = st.text_area("Enter any additional instructions", height=100)
+        additional_instructions = st.text_area("Enter any additional instructions", height=20)
         if st.button("Generate Cover Letter", key="cover_letter_generate_button"):
             with st.spinner('Generating cover letter...'):
                 cover_letter = generate_cover_letter(resume_summary, job_description, additional_instructions)
@@ -136,52 +135,3 @@ with tab4:
     else:
         st.warning("Please upload a resume to search for jobs.")
         
-# Resume template Tab
-# with tab5:
-#     st.subheader("Live Resume Template Editor")
-    
-#     # Create a 3x3 grid layout using columns
-#     col1, col2, col3 = st.columns(3)
-    
-#     # First row
-#     with col1:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")
-    
-#     with col2:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")
-    
-#     with col3:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")
-
-#     # Second row
-#     col4, col5, col6 = st.columns(3)
-    
-#     with col4:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")
-    
-#     with col5:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")
-    
-#     with col6:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")
-
-#     # Third row
-#     col7, col8, col9 = st.columns(3)
-    
-#     with col7:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")
-    
-#     with col8:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")
-    
-#     with col9:
-#         st.header("A cat")
-#         st.image("https://static.streamlit.io/examples/cat.jpg")

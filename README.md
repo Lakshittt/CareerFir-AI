@@ -72,13 +72,13 @@ GEMINI_API_KEY=your_gemini_api_key_here
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/job-fit-assessment.git
+git clone https://github.com/Lakshittt/CareerFit-AI.git
 ```
 
 2. Navigate to the project directory:
 
 ```bash
-cd job-fit-assessment
+cd CareerFit-AI
 ```
 
 3. Create a virtual environment:

@@ -1,19 +1,15 @@
 import os
-import re
-import urllib.parse
-import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 import tempfile
+import re
+import os
 
-# Load and configure Gemini
-dotenv_path = ".env"
-load_dotenv(dotenv_path)
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 if not gemini_api_key:
-    raise ValueError(f"Unable to retrieve GEMINI_API_KEY from {dotenv_path}")
+    raise ValueError(f"Unable to retrieve GEMINI_API_KEY.")
 
 genai.configure(api_key=gemini_api_key)
 model = genai.GenerativeModel('gemini-pro')
@@ -24,23 +20,19 @@ def summarize_text(text):
     return response.text
 
 def ats_score(ats_resume):
-    # Define the prompt with detailed ATS evaluation criteria
     prompt = (
         f"Objective: Analyze the uploaded resume with an in-depth Applicant Tracking System (ATS) evaluation. "
         f"Provide a detailed ATS compatibility score based on keyword optimization, formatting, readability, structuring, and job relevance. "
         f"Identify strengths, weaknesses, and actionable improvements for better ATS performance.\n\n"
-        
         f"🛠️ Evaluation Criteria:\n"
         f"1️⃣ Keyword Optimization (30%)\n"
         f"Extract job-relevant keywords and compare them with the provided job description (if available).\n"
         f"Highlight missing or underused keywords.\n"
         f"Evaluate keyword placement in key sections (Summary, Skills, Experience).\n"
-        
         f"2️⃣ Formatting & ATS Readability (20%)\n"
         f"Check for ATS-friendly formatting (no tables, graphics, columns that could break parsing).\n"
         f"Verify clear section headings ('Work Experience,' 'Education') for accurate parsing.\n"
         f"Ensure proper use of bullet points and font styles for readability.\n"
-        
         f"3️⃣ Section Structuring & Completeness (15%)\n"
         f"Validate the presence of essential sections:\n"
         f"Contact Information (Email, Phone, LinkedIn, Portfolio, etc.)\n"
@@ -50,27 +42,22 @@ def ats_score(ats_resume):
         f"Education & Certifications\n"
         f"Additional Sections (Projects, Awards, Volunteer Work, etc.)\n"
         f"Identify any missing sections affecting ATS ranking.\n"
-        
         f"4️⃣ Work Experience & Achievements (15%)\n"
         f"Assess proper job entry structure (Company → Job Title → Dates → Responsibilities).\n"
         f"Check for quantifiable achievements ('Increased revenue by 30%' vs. 'Responsible for sales').\n"
         f"Ensure action-oriented language, avoiding passive descriptions.\n"
-        
         f"5️⃣ Job Match & Customization (10%)\n"
         f"Compare the resume's content against a provided job description.\n"
         f"Generate a Job Match Score (%) based on keyword and experience alignment.\n"
         f"Identify missing qualifications or experience gaps.\n"
-        
         f"6️⃣ Grammar, Consistency & Readability (10%)\n"
         f"Check for grammar, punctuation, and spelling errors.\n"
         f"Assess consistency in formatting, date formats, and tense usage.\n"
         f"Evaluate readability using metrics like Flesch-Kincaid scores.\n\n"
-        
         f"📌 Structured Output Format:\n"
         f"📊 ATS Resume Analysis Report\n"
         f"✅ Final ATS Resume Score: X/100\n"
         f"(A score evaluating ATS compatibility, keyword optimization, formatting, and relevance.)\n\n"
-        
         f"📌 Section-Wise Breakdown:\n"
         f"🔹 Keyword Optimization: X/30\n"
         f"🔹 Formatting & ATS Readability: X/20\n"
@@ -78,29 +65,22 @@ def ats_score(ats_resume):
         f"🔹 Work Experience & Achievements: X/15\n"
         f"🔹 Job Match Score: X/10\n"
         f"🔹 Grammar & Readability: X/10\n\n"
-        
         f"📌 Key Strengths:\n"
         f"✔️ [Highlight 2-3 strong points of the resume]\n\n"
-        
         f"📌 Critical Improvements Needed:\n"
         f"⚠️ [List major issues affecting ATS ranking]\n\n"
-        
         f"📌 Suggested Revisions:\n"
         f"📌 Formatting Fixes: [Specific recommendations]\n"
         f"📌 Keyword Enhancements: [Suggested missing keywords]\n"
         f"📌 Experience Optimization: [How to improve bullet points]\n"
         f"📌 Grammar & Readability: [Key grammar/spelling fixes]\n\n"
-        
         f"📌 Job Match Score (if JD is provided):\n"
         f"📊 X% match with job description.\n"
         f"🔎 Missing Skills/Keywords: [List missing job-relevant terms]\n\n"
-        
         f"🚀 Final Recommendation:\n"
         f"✅ Good to Go | 🟡 Needs Minor Fixes | 🔴 Requires Major Improvement\n\n"
-        
         f"Resume:\n{ats_resume}\n\n"
     )
-
     response = model.generate_content(prompt)
     return response.text
 
@@ -190,7 +170,6 @@ def load_pdf_text(file):
         loader = PyPDFLoader(tmp_file.name)
         return ''.join([p.page_content for p in loader.load_and_split()])
 
-# Initialize text splitter
 text_splitter = CharacterTextSplitter(
     separator="\n",
     chunk_size=800,
@@ -199,7 +178,6 @@ text_splitter = CharacterTextSplitter(
 )
 
 def generate_linkedin_search_url(resume_summary):
-    # Define the prompt to extract keywords and generate a LinkedIn job search query
     prompt = (
         f"**Step 1: Extract Keywords from the Resume**\n"
         f"Please scan the uploaded resume summary and return a JSON decodable string, (properties and values should be in double quotes) with the following structure:\n"
@@ -209,14 +187,12 @@ def generate_linkedin_search_url(resume_summary):
         f"  'technologies': ['Tech 1', 'Tech 2'],\n"
         f"  'locations': ['Location 1', 'Location 2']\n"
         f"}}\n\n"
+        f"**Instructions: exclude any soft skills from the skills list**\n"
         f"Extract from this resume summary:\n{resume_summary}\n"
     )
-
-    # Generate content using the model
     response = model.generate_content(prompt)
     response_text = response.text
 
-    # Create a new prompt to process the response
     processing_prompt = (
         f"Given this JSON response from a resume analysis:\n{response_text}\n\n"
         f"Please create a LinkedIn job search URL with the following steps:\n"
@@ -234,8 +210,6 @@ def generate_linkedin_search_url(resume_summary):
         f"https://www.linkedin.com/jobs/search/?keywords=<encoded_query>\n"
         f"8. Return the URL only, no other text or comments.\n"
     )
-
-    # Let the model generate the URL
     url_response = model.generate_content(processing_prompt)
     linkedin_url = url_response.text.strip()
 
@@ -262,7 +236,6 @@ def generate_cover_letter(resume_summary, job_description, additional_instructio
         f"**Job Description:**\n{job_description}\n\n"
         f"**Additional Instructions:**\n{additional_instructions}\n\n"
     )
-
     response = model.generate_content(prompt)
     return response.text
 
